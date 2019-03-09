@@ -4,8 +4,11 @@
 #include <linux/init.h>
 #include <linux/kdev_t.h>
 #include <linux/kernel.h>
+#include <linux/ktime.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
+#include <linux/uaccess.h>
+#include <uapi/linux/time.h>
 
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_AUTHOR("National Cheng Kung University, Taiwan");
@@ -23,6 +26,7 @@ static dev_t fib_dev = 0;
 static struct cdev *fib_cdev;
 static struct class *fib_class;
 static DEFINE_MUTEX(fib_mutex);
+static char kbuffer[100];
 
 static long long fib_sequence(long long k)
 {
@@ -60,7 +64,17 @@ static ssize_t fib_read(struct file *file,
                         size_t size,
                         loff_t *offset)
 {
-    return (ssize_t) fib_sequence(*offset);
+    ktime_t timelapsed, start, end;
+    ssize_t retval;
+
+    start = ktime_get();
+    retval = (ssize_t) fib_sequence(*offset);
+    end = ktime_get();
+    timelapsed = ktime_sub(end, start);
+    sprintf(kbuffer, "%lld\n", timelapsed);
+    copy_to_user(buf, kbuffer, 100);
+
+    return retval;
 }
 
 /* write operation is skipped */
