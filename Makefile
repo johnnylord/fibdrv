@@ -23,6 +23,8 @@ load:
 	sudo insmod $(TARGET_MODULE).ko
 unload:
 	sudo rmmod $(TARGET_MODULE) || true >/dev/null
+plot:
+	gnuplot -p -c time.gp
 
 client: client.c
 	$(CC) -o $@ $^
