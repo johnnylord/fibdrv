@@ -36,16 +36,18 @@ int main()
     }
 
     char buffer[100];
+    char kbuffer[100];
 
     for (i = 0; i <= offset; i++) {
         lseek(fd, i, SEEK_SET);
 
         clock_gettime(cid, &start);
-        sz = read(fd, buf, 1);
+        sz = read(fd, kbuffer, 100);
         clock_gettime(cid, &end);
         sec = end.tv_sec - start.tv_sec;
         nanosec = end.tv_nsec - start.tv_nsec;
-        sprintf(buffer, "%d %ld\n", i, sec * 1000000000 + nanosec);
+        sprintf(buffer, "%d %ld %ld\n", i, sec * 1000000000 + nanosec,
+                atol(kbuffer));
         write(fd_out, buffer, strlen(buffer));
 
         printf("Reading from " FIB_DEV
