@@ -1,3 +1,4 @@
+CC := gcc
 CONFIG_MODULE_SIG = n
 TARGET_MODULE := fibdrv
 
@@ -9,7 +10,7 @@ PWD := $(shell pwd)
 
 GIT_HOOKS := .git/hooks/applied
 
-all: $(GIT_HOOKS) client
+all: $(GIT_HOOKS) client thread
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
 
 $(GIT_HOOKS):
@@ -19,15 +20,17 @@ $(GIT_HOOKS):
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
 	$(RM) client out
+	$(RM) thread out
 load:
 	sudo insmod $(TARGET_MODULE).ko
 unload:
 	sudo rmmod $(TARGET_MODULE) || true >/dev/null
 plot:
 	gnuplot -p -c time.gp
-
 client: client.c
 	$(CC) -o $@ $^
+thread: thread.c
+	$(CC) $^ -lpthread -o $@
 
 PRINTF = env printf
 PASS_COLOR = \e[32;01m
